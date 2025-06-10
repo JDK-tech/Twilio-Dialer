@@ -46,9 +46,7 @@ def get_token():
 
 @app.route("/handle_calls", methods=["POST"])
 def handle_calls():
-    p.pprint(request.form)
     response = VoiceResponse()
-
     to_number = request.form.get("To")
     caller = request.form.get("Caller", "unknown")
 
@@ -60,10 +58,10 @@ def handle_calls():
         print("Incoming call detected")
         dial = Dial(callerId=caller)
 
-        # Forwarding numbers (unchanged as per request)
+        # Forwarding numbers (unchanged)
         forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
 
-        # Try forwarding to each number with a timeout
+        # Try forwarding to each number in sequence
         for number in forwarding_numbers:
             dial.number(number, timeout=20)
 
