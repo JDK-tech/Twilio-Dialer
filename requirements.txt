@@ -19,6 +19,7 @@ multidict==6.4.4
 packaging==25.0
 propcache==0.3.2
 PyJWT==2.10.1
+python-dotenv==1.1.0
 requests==2.32.4
 twilio==9.6.2
 urllib3==2.4.0
