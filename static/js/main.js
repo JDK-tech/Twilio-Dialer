@@ -36,7 +36,7 @@ $(function () {
             // Handle Incoming Call
             device.on("incoming", function (conn) {
                 console.log(conn.parameters);
-                log("Incoming connection from " + conn.parameters.From);
+                log("Incoming call from: " + conn.parameters.From);
 
                 $("#callerNumber").text(conn.parameters.From);
                 $("#txtPhoneNumber").text(conn.parameters.From);
@@ -49,13 +49,17 @@ $(function () {
                     conn.reject();
                 });
 
-                // Accept Call and Forward
+                // Accept Call Without Forwarding
                 $('.btnAcceptCall').unbind().bind('click', function () {
                     $('.modal').modal('hide');
                     log("Accepted call...");
+                    conn.accept(); // Accept the call normally
+                });
 
+                // Accept Call and Forward
+                $('.btnForwardCall').unbind().bind('click', function () {
                     let forwardingNumbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"];
-                    
+
                     if (forwardingNumbers.length > 0) {
                         log("Forwarding call to: " + forwardingNumbers[0]);
 
@@ -65,7 +69,8 @@ $(function () {
                             log("Failed to forward the call.");
                         });
                     } else {
-                        conn.accept(); // No forwarding numbers, accept normally
+                        log("No available forwarding numbers.");
+                        conn.accept();
                     }
                 });
 
