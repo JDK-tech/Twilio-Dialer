@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.twiml.voice_response import VoiceResponse, Dial
@@ -16,6 +16,7 @@ api_key_secret = os.getenv("TWILIO_API_KEY_SECRET")
 twiml_app_sid = os.getenv("TWIML_APP_SID")
 twilio_number = os.getenv("TWILIO_NUMBER")
 
+# Flask App Initialization (ONLY ONCE)
 app = Flask(__name__)
 
 # Enable logging for debugging
@@ -33,7 +34,6 @@ def get_token():
         return jsonify({'error': 'Missing Twilio credentials'}), 500
 
     try:
-        # Generate token
         access_token = AccessToken(account_sid, api_key, api_key_secret, identity=identity)
         voice_grant = VoiceGrant(outgoing_application_sid=twiml_app_sid, incoming_allow=True)
         access_token.add_grant(voice_grant)
@@ -42,11 +42,6 @@ def get_token():
 
     except Exception as e:
         return jsonify({'error': f'Failed to generate token: {str(e)}'}), 500
-
-from flask import Flask, request, Response
-from twilio.twiml.voice_response import VoiceResponse, Dial
-
-app = Flask(__name__)
 
 @app.route("/voice", methods=["POST"])
 def voice():
@@ -58,8 +53,7 @@ def voice():
         dial.number(number, timeout=20)
 
     response.append(dial)
-
-    return Response(str(response), mimetype="text/xml")  # Ensure correct TwiML response format
+    return Response(str(response), mimetype="text/xml")  # Ensure TwiML response format
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10000, debug=True)
