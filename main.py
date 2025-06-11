@@ -1,3 +1,7 @@
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 from flask import Flask, request, jsonify, render_template
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
@@ -48,19 +52,19 @@ def voice():
     logging.info(f"Incoming call from: {caller}, To: {to_number}")
 
     if to_number and to_number != twilio_number:
-        dial = Dial(callerId=twilio_number)
-        dial.number(to_number)
+        response.dial(to_number)
     else:
+        response.say("Connecting your call...")
         dial = Dial(callerId=caller)
 
-        # Forwarding numbers (unchanged)
         forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
-        
         for number in forwarding_numbers:
             dial.number(number, timeout=20)
 
-    response.append(dial)
+        response.append(dial)
+
     return str(response)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10000, debug=True)
