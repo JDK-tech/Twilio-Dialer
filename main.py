@@ -43,28 +43,23 @@ def get_token():
     except Exception as e:
         return jsonify({'error': f'Failed to generate token: {str(e)}'}), 500
 
+from flask import Flask, request, Response
+from twilio.twiml.voice_response import VoiceResponse, Dial
+
+app = Flask(__name__)
+
 @app.route("/voice", methods=["POST"])
 def voice():
     response = VoiceResponse()
-    caller = request.form.get("Caller", "unknown")
-    to_number = request.form.get("To", None)
-    transfer_number = request.form.get("TransferTo", None)  # Accept transfer number dynamically
+    dial = Dial(callerId=request.form.get("Caller", "unknown"))
 
-    logging.info(f"Incoming call from: {caller}, To: {to_number}, TransferTo: {transfer_number}")
+    forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
+    for number in forwarding_numbers:
+        dial.number(number, timeout=20)
 
-    if transfer_number:
-        response.dial(transfer_number)
-    elif to_number and to_number != twilio_number:
-        response.dial(to_number)
-    else:
-        dial = Dial(callerId=caller)
-        forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
-        for number in forwarding_numbers:
-            dial.number(number, timeout=20)
-        response.append(dial)
+    response.append(dial)
 
-    return str(response)
-
+    return Response(str(response), mimetype="text/xml")  # Ensure correct TwiML response format
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10000, debug=True)
