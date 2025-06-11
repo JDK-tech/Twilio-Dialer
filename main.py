@@ -39,20 +39,23 @@ def get_token():
     except Exception as e:
         return jsonify({'error': f'Failed to generate token: {str(e)}'}), 500
 
-@app.route("/handle_calls", methods=["POST"])
-def handle_calls():
+@app.route("/voice", methods=["POST"])
+def voice():
     response = VoiceResponse()
     caller = request.form.get("Caller", "unknown")
+    to_number = request.form.get("To", None)
 
-    if caller != twilio_number:
+    logging.info(f"Incoming call from: {caller}, To: {to_number}")
+
+    if to_number and to_number != twilio_number:
         dial = Dial(callerId=twilio_number)
-        dial.number(request.form["To"])
+        dial.number(to_number)
     else:
-        response.say("Incoming call detected, connecting...")
         dial = Dial(callerId=caller)
 
         # Forwarding numbers (unchanged)
         forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
+        
         for number in forwarding_numbers:
             dial.number(number, timeout=20)
 
