@@ -1,13 +1,10 @@
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
 from flask import Flask, request, jsonify, render_template
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.twiml.voice_response import VoiceResponse, Dial
 import os
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +17,9 @@ twiml_app_sid = os.getenv("TWIML_APP_SID")
 twilio_number = os.getenv("TWILIO_NUMBER")
 
 app = Flask(__name__)
+
+# Enable logging for debugging
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def home():
@@ -48,19 +48,19 @@ def voice():
     response = VoiceResponse()
     caller = request.form.get("Caller", "unknown")
     to_number = request.form.get("To", None)
+    transfer_number = request.form.get("TransferTo", None)  # Accept transfer number dynamically
 
-    logging.info(f"Incoming call from: {caller}, To: {to_number}")
+    logging.info(f"Incoming call from: {caller}, To: {to_number}, TransferTo: {transfer_number}")
 
-    if to_number and to_number != twilio_number:
+    if transfer_number:
+        response.dial(transfer_number)
+    elif to_number and to_number != twilio_number:
         response.dial(to_number)
     else:
-        response.say("Connecting your call...")
         dial = Dial(callerId=caller)
-
         forwarding_numbers = ["+18108191394", "+13137658399", "+15177778712", "+18105444469", "+17346009019", "+17343664154", "+15863023066", "+15177451309"]
         for number in forwarding_numbers:
             dial.number(number, timeout=20)
-
         response.append(dial)
 
     return str(response)
